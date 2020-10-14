@@ -75,8 +75,8 @@ def generate_data(data, model, samples, targeted=True, target_num=9, start=0, in
                 seq = np.random.randint(labels_d.shape[1])
 
             inputs.append(data_d[start + i])
-            targets.append(np.eye(labels_d.shape[1])[seq])
-            labels.append(labels_d[start + i])
+            targets.append(np.eye(labels_d.shape[1])[seq]) #target labels
+            labels.append(labels_d[start + i]) #correct labels
             true_ids.append(start + i)
 
         else:
@@ -167,8 +167,8 @@ def l1_l2_li_computation(args, data, model, adv, inception, inputs, targets, lab
     d_average_linf = []
     r_average = []
     if (args['show']):
-        if not os.path.exists(str(args['save']) + "/" + str(args['dataset']) + "/" + str(args['attack'])):
-            os.makedirs(str(args['save']) + "/" + str(args['dataset']) + "/" + str(args['attack']))
+        if not os.path.exists(str(args['save']) + "/" + str(args['dataset']) + "/" + str(args['attack']) + "/" + "targeted"):
+            os.makedirs(str(args['save']) + "/" + str(args['dataset']) + "/" + str(args['attack']) + "/" + "targeted")
 
     for j in range(len(inputs)):
     #    pred = []
@@ -186,6 +186,28 @@ def l1_l2_li_computation(args, data, model, adv, inception, inputs, targets, lab
             d_average_linf.append(np.amax(np.abs(adv[j] - inputs[j])))
         else:
             r_average.append(0)
+
+        if args['show']:
+            target_id = np.argmax(targets[j:j+ 1], 1)
+            label_id = np.argmax(labels[j:j+1], 1)
+            prev_id = np.argmax(np.reshape(model.model.predict(inputs[j:j + 1]), 
+                (data.test_labels[0:1].shape)), 1)
+            adv_id = np.argmax(np.reshape(model.model.predict(adv[j:j + 1]), (data.test_labels[0:1].shape)), 1)
+            suffix = "id{}_seq{}_lbl{}_prev{}_adv{}_{}_l1_{:.3f}_l2_{:.3f}_linf_{:.3f}".format(
+                true_ids[j],
+                target_id,
+                label_id,
+                prev_id,
+                adv_id,
+                adv_id == target_id,
+                np.sum(np.abs(adv[j] - inputs[j])),
+                np.sum((adv[j] - inputs[j]) ** 2) ** .5,
+                np.amax(np.abs(adv[j] - inputs[j])))
+
+            show(inputs[j:j + 1], str(args['save']) + "/" + str(args['dataset']) + "/" + str(
+                args['attack']) + "/" + "targeted" + "/original_{}.png".format(suffix))
+            show(adv[j:j + 1], str(args['save']) + "/" + str(args['dataset']) + "/" + str(
+                args['attack']) + "/" + "targeted" + "/adversarial_{}.png".format(suffix))
 
 
     queryl23 = np.sqrt(queryl2) / inputs.shape[1] / inputs.shape[2] / inputs.shape[3]
@@ -214,8 +236,8 @@ def l2_computation(args, data, model, adv, inception, inputs, targets, labels, t
     d_average_linf = []
     r_average = []
     if (args['show']):
-        if not os.path.exists(str(args['save']) + "/" + str(args['dataset']) + "/" + str(args['attack'])):
-            os.makedirs(str(args['save']) + "/" + str(args['dataset']) + "/" + str(args['attack']))
+        if not os.path.exists(str(args['save']) + "/" + str(args['dataset']) + "/" + str(args['attack']) + "/" + "untargeted"):
+            os.makedirs(str(args['save']) + "/" + str(args['dataset']) + "/" + str(args['attack']) + "/" + "untargeted")
 
     for j in range(len(inputs)):
     #    pred = []
@@ -253,9 +275,9 @@ def l2_computation(args, data, model, adv, inception, inputs, targets, labels, t
                     np.amax(np.abs(adv[i] - inputs[i])))
 
                 show(inputs[i:i + 1], str(args['save']) + "/" + str(args['dataset']) + "/" + str(
-                    args['attack']) + "/original_{}.png".format(suffix))
+                    args['attack']) + "/" + "untargeted" + "/original_{}.png".format(suffix))
                 show(adv[i:i + 1], str(args['save']) + "/" + str(args['dataset']) + "/" + str(
-                    args['attack']) + "/adversarial_{}.png".format(suffix))
+                    args['attack']) + "/" + "untargeted" + "/adversarial_{}.png".format(suffix))
                 #print("save " + str(i) + " orgin & adver !!!!!!!!!!!!!!!!!!!!!!!!!")
 
     queryl23 = np.sqrt(queryl2) / inputs.shape[1] / inputs.shape[2] / inputs.shape[3]

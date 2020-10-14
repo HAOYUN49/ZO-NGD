@@ -74,7 +74,7 @@ def generate_data(data, model, samples, targeted=True, target_num=9, start=0, in
             while seq == np.argmax(labels_d[start + i]):
                 seq = np.random.randint(labels_d.shape[1])
 
-            seq=0
+            #seq=0
 
             inputs.append(data_d[start + i])
             targets.append(np.eye(labels_d.shape[1])[seq])
@@ -178,10 +178,9 @@ def l1_l2_li_computation(args, data, model, adv, inception, inputs, targets, lab
     d_worst_linf = []
 
     if (args['show']):
-        if not os.path.exists(str(args['save']) + "/" + str(args['dataset']) + "/" + str(args['attack'])):
-            os.makedirs(str(args['save']) + "/" + str(args['dataset']) + "/" + str(args['attack']))
+        if not os.path.exists(str(args['save']) + "/" + str(args['dataset']) + "/" + str(args['attack']) + "/" + "targeted"):
+            os.makedirs(str(args['save']) + "/" + str(args['dataset']) + "/" + str(args['attack']) + "/" + "targeted")
 
-    succ = 0
     for i in range(0, len(inputs), args['target_number']):
         pred = []
         for j in range(i, i + args['target_number']):
@@ -276,13 +275,10 @@ def l1_l2_li_computation(args, data, model, adv, inception, inputs, targets, lab
                     np.sum((adv[j] - inputs[j]) ** 2) ** .5,
                     np.amax(np.abs(adv[j] - inputs[j])))
 
-                if adv_id == target_id:
-                    succ += 1
-
                 show(inputs[j:j + 1], str(args['save']) + "/" + str(args['dataset']) + "/" + str(
-                    args['attack']) + "/original_{}.png".format(suffix))
+                    args['attack']) + "/" + "targeted" + "/original_{}.png".format(suffix))
                 show(adv[j:j + 1], str(args['save']) + "/" + str(args['dataset']) + "/" + str(
-                    args['attack']) + "/adversarial_{}.png".format(suffix))
+                    args['attack']) + "/" + "targeted" + "/adversarial_{}.png".format(suffix))
 
     querycount = np.reshape(querycount, (-1, 9))
     qc_batch_min = np.amin(querycount, axis=1)
@@ -315,7 +311,6 @@ def l1_l2_li_computation(args, data, model, adv, inception, inputs, targets, lab
     print('smallest_query_l2_first_success', np.mean(qcl2_batch_min))
     print('mean_query_l2_first_success', np.mean(qcl2_batch_mean))
     print('largest_query_l2_first_success', np.mean(qcl2_batch_max))
-    print("success rate: {:.3}".format(succ/len(inputs)))
 
 
 def l2_computation(args, data, model, adv, inception, inputs, targets, labels, true_ids, querycount, queryl2):
@@ -325,8 +320,8 @@ def l2_computation(args, data, model, adv, inception, inputs, targets, labels, t
     d_average_linf = []
     r_average = []
     if (args['show']):
-        if not os.path.exists(str(args['save']) + "/" + str(args['dataset']) + "/" + str(args['attack'])):
-            os.makedirs(str(args['save']) + "/" + str(args['dataset']) + "/" + str(args['attack']))
+        if not os.path.exists(str(args['save']) + "/" + str(args['dataset']) + "/" + str(args['attack']) + "/" + "untargeted"):
+            os.makedirs(str(args['save']) + "/" + str(args['dataset']) + "/" + str(args['attack']) + + "/" + "untargeted")
 
     for j in range(len(inputs)):
     #    pred = []
@@ -364,9 +359,9 @@ def l2_computation(args, data, model, adv, inception, inputs, targets, labels, t
                     np.amax(np.abs(adv[i] - inputs[i])))
 
                 show(inputs[i:i + 1], str(args['save']) + "/" + str(args['dataset']) + "/" + str(
-                    args['attack']) + "/original_{}.png".format(suffix))
+                    args['attack']) + "/" + "untargeted" + "/original_{}.png".format(suffix))
                 show(adv[i:i + 1], str(args['save']) + "/" + str(args['dataset']) + "/" + str(
-                    args['attack']) + "/adversarial_{}.png".format(suffix))
+                    args['attack']) + "/" + "untargeted" + "/adversarial_{}.png".format(suffix))
 
     queryl23 = np.sqrt(queryl2) / inputs.shape[1] / inputs.shape[2] / inputs.shape[3]
 
